@@ -4,6 +4,8 @@ import os
 import math
 import struct
 import argparse
+import io
+import itertools
 
 writearr = []
 maxwidth = 4000
@@ -20,13 +22,28 @@ inputfile = args.get('i')
 outputfile = args.get('o')
 
 filesize = os.path.getsize(inputfile)
-numfiles = math.ceil(filesize/float(maxsize))
+numfiles = int(math.ceil(filesize/float(maxsize)))
 bytesread = 0
 
 numpixels = int(math.ceil(filesize/3.0))
 
+# write first n-1 files
+rowsize = maxwidth * bytesperpixel
+for i in range(numfiles - 1):
+    writearr = []
+    finbytes = bytesread + maxsize
+    while bytesread < finbytes:
+        writearr.append(b[bytesread:bytesread+rowsize])
+        bytesread += rowsize
+    testfile = open(outputfile + "_%d.png" % i, 'wb')
+    w = png.Writer(maxwidth, maxheight)
+    w.write(testfile, writearr)
+    testfile.close()
+    print "file %d finished" % i
+
+"""
 #TODO WRITE ALL FILES AT ONCE?????
-for i in range(int(numfiles)):
+for i in range(numfiles):
     writearr = []
     width = 4000
     height = 3000
@@ -45,10 +62,7 @@ for i in range(int(numfiles)):
         readBytes.seek(bytesread)
         for k in range(int(height)):
             # read in a row's worth of bytes
-            # optimize with byte array
-            barray = bytearray()
-            byte_data = readBytes.read(int(width * bytesperpixel))
-            barray.extend(byte_data)
+            byte_data = [ord(test) for test in list(readBytes.read(int(width * bytesperpixel)))]
             bytesread += int(width * bytesperpixel)
             # give some kind of user feedback
             print bytesread, filesize
@@ -56,7 +70,7 @@ for i in range(int(numfiles)):
             # 0's to the row so we can write out the PNG
             if len(byte_data) < (width * bytesperpixel):
                 break
-            writearr.append(barray)
+            writearr.append(byte_data)
 
     print int((width * bytesperpixel) - len(byte_data))
     if int((width * bytesperpixel) - len(byte_data)) != 0:
@@ -70,3 +84,4 @@ for i in range(int(numfiles)):
     w.write(testfile, writearr)
     testfile.close()
     numpixels -= maxsize/3.0
+"""

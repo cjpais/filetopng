@@ -16,16 +16,23 @@ args = vars(parser.parse_args())
 inputfile = args.get('i')
 outputfile = args.get('o')
 
+# get numfiles more accurately
 numfiles = glob.glob(inputfile + '_*.png')
 
 #print "There are %d files being processed" % numfiles
 
-for i in range(42):
+import time
+start_time = time.time()
+for i in range(3):
     print "_%d.png" % i
     with open(inputfile + "_%d.png" % i,'rb') as inputpixels:
         reader = png.Reader(file=inputpixels)
-        png_read = reader.read()
+        png_read = reader.asDirect()
+        import pdb; pdb.set_trace()
+        start_time = time.time()
         pixels.append(list(png_read[2]))
+        print("--- %s seconds ---" % (time.time() - start_time))
+
 
 print 'Starting to write final output file'
 with open(outputfile,'wb') as output:
@@ -33,3 +40,6 @@ with open(outputfile,'wb') as output:
         for j in i:
             for k in j:
                 output.write(struct.pack('B',k))
+
+
+print("--- %s seconds ---" % (time.time() - start_time))
